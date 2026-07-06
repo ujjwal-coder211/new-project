@@ -1,0 +1,101 @@
+# Aitotech full stack — one command: .\scripts\dev-up.ps1
+#
+# Host ports:
+#   nexus   -> 8080   routely -> 8000   sayra -> 7860
+#   n8n     -> 5678   agents  -> 8090   postgres/redis internal only
+
+services:
+  nexus:
+    build: .
+    ports:
+      - "8080:8000"
+    environment:
+      NEXUS_API_KEY: ${NEXUS_API_KEY:-dev-key}
+      SAYRA_URL: http://sayra:7860
+      ROUTELY_URL: http://routely:8000
+      N8N_URL: http://n8n:5678
+      N8N_WEBHOOK_BASE: http://n8n:5678/webhook
+      AGENTS_URL: http://agents:8090
+      ROUTELY_API_KEY: ${ROUTELY_API_KEY:-}
+      AGENTS_API_KEY: ${AGENTS_API_KEY:-}
+    depends_on:
+      - sayra
+      - routely
+      - n8n
+      - agents
+
+  sayra:
+    build: repos/Sayra
+    ports:
+      - "7860:7860"
+    env_file:
+      - path: repos/Sayra/.env
+        required: false
+
+  routely:
+    build: repos/Saas
+    ports:
+      - "8000:8000"
+    env_file:
+      - path: repos/Saas/.env
+        required: false
+    environment:
+      DATABASE_URL: postgresql+psycopg2://aitotech:aitotech_dev@postgres:5432/neuralrouter
+      REDIS_URL: redis://redis:6379/0
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    volumes:
+      - omni_vault:/app/omni_training/data/vault
+      - project_data:/app/data/projects
+
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: aitotech
+      POSTGRES_PASSWORD: aitotech_dev
+      POSTGRES_DB: neuralrouter
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./repos/Saas/saas/db/schema.sql:/docker-entrypoint-initdb.d/01-schema.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U aitotech -d neuralrouter"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  n8n:
+    build: repos/ai-engine
+    ports:
+      - "5678:5678"
+    environment:
+      N8N_DIAGNOSTICS_ENABLED: "false"
+      N8N_SECURE_COOKIE: "false"
+    volumes:
+      - n8n_data:/home/node/.n8n
+
+  agents:
+    build: repos/Aitotech-agents
+    ports:
+      - "8090:8090"
+    environment:
+      PORT: "8090"
+    env_file:
+      - path: repos/Aitotech-agents/.env
+        required: false
+
+volumes:
+  pgdata:
+  omni_vault:
+  project_data:
+  n8n_data:

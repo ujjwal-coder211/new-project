@@ -1,0 +1,49 @@
+# Single source of truth for the Aitotech ecosystem.
+#
+# url_env      -> environment variable holding the service base URL
+# default_url  -> fallback (docker-compose service name) when the env var is unset
+# health_path  -> GET path used by /health/all
+# auth         -> none | bearer (key_env names the env var with the token)
+
+services:
+  sayra:
+    url_env: SAYRA_URL
+    default_url: http://sayra:7860
+    health_path: /health
+    auth: none
+
+  routely:
+    url_env: ROUTELY_URL
+    default_url: http://routely:8000
+    health_path: /health
+    auth: bearer
+    key_env: ROUTELY_API_KEY
+
+  n8n:
+    url_env: N8N_URL
+    default_url: http://n8n:5678
+    health_path: /healthz
+    auth: none
+
+  agents:
+    url_env: AGENTS_URL
+    default_url: http://agents:8090
+    health_path: /health
+    auth: bearer
+    key_env: AGENTS_API_KEY
+
+# intent -> {service, path} routing table used by POST /v1/route.
+# Keep ALL routing decisions here — never hardcode them in gateway code.
+intents:
+  chat:
+    service: routely
+    path: /chat
+  automation.run:
+    service: n8n
+    path: /webhook
+  agent.task:
+    service: agents
+    path: /v1/tasks
+  notify.user:
+    service: sayra
+    path: /v1/notify

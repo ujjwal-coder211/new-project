@@ -1,0 +1,12 @@
+[submodule "repos/Sayra"]
+	path = repos/Sayra
+	url = https://github.com/ujjwal-coder211/Sayra
+[submodule "repos/Saas"]
+	path = repos/Saas
+	url = https://github.com/ujjwal-coder211/Saas
+[submodule "repos/ai-engine"]
+	path = repos/ai-engine
+	url = https://github.com/ujjwal-coder211/ai-engine
+[submodule "repos/Aitotech-agents"]
+	path = repos/Aitotech-agents
+	url = https://github.com/ujjwal-coder211/Aitotech-agents
