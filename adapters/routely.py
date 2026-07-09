@@ -1,7 +1,7 @@
-"""Routely (Saas repo) adapter — sends chat turns to the Omni brain.
+"""Routely adapter — sends chat turns to the external Omni brain.
 
-Routely does its own model routing (Omni conductor); Nexus just forwards the
-message and passes thread_id through so Hermes memory keeps continuity.
+Routely/Saas is a separate project (not vendored in Nexus). Nexus only calls
+its HTTP API via ROUTELY_URL and passes thread_id through for Hermes memory.
 """
 
 from __future__ import annotations

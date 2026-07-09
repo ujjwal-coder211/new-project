@@ -2,15 +2,18 @@
 
 Nexus is the **control plane** for the Aitotech ecosystem. It contains no business
 logic — only routing, contracts, health checks, auth, and the infrastructure to bring
-the whole stack up with one command.
+the local stack up with one command.
 
 ```
-Sayra (voice/chat)  ──►  Nexus Gateway  ──►  Routely / Saas (brain)
+Sayra (voice/chat)  ──►  Nexus Gateway  ──►  Routely (external brain — separate repo)
                               │
                               ├──►  ai-engine (n8n workflows)
                               ├──►  Aitotech-agents (Supabase)
                               └──►  Aitotech website (status feed)
 ```
+
+**Routely / Saas is not vendored here.** It is a separate project. Nexus talks to it
+only via `ROUTELY_URL` (and optional `ROUTELY_API_KEY`).
 
 ## What lives here
 
@@ -19,7 +22,7 @@ Sayra (voice/chat)  ──►  Nexus Gateway  ──►  Routely / Saas (brain)
 | `contracts/` | Task envelope schema + service registry (single source of truth) |
 | `gateway/` | FastAPI app: `/v1/route`, `/health/all`, `/v1/status`, auth |
 | `adapters/` | Connectors for Routely, n8n, Aitotech-agents, Sayra |
-| `repos/` | Git submodules of the four service repos (local full-stack dev) |
+| `repos/` | Git submodules: Sayra, ai-engine, Aitotech-agents (local full-stack) |
 | `scripts/` | `dev-up.ps1` (one-command stack) + `smoke.py` (round-trip test) |
 
 ## Quick start (gateway only)
@@ -28,13 +31,16 @@ Sayra (voice/chat)  ──►  Nexus Gateway  ──►  Routely / Saas (brain)
 python -m venv .venv
 .venv\Scripts\Activate.ps1
 pip install -r requirements.txt
-copy .env.example .env   # fill in values
+copy .env.example .env   # set ROUTELY_URL to your Routely deploy
 uvicorn gateway.main:app --reload
 ```
 
 Check: `http://localhost:8000/health`
 
-## Quick start (full stack)
+## Quick start (local stack)
+
+Brings up Nexus + Sayra + n8n + agents. Routely must already be running elsewhere
+(or set `ROUTELY_URL` to its deploy URL).
 
 ```powershell
 .\scripts\dev-up.ps1

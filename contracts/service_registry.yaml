@@ -12,9 +12,10 @@ services:
     health_path: /health
     auth: none
 
+  # External only — Routely/Saas lives in its own repo, not in this compose.
   routely:
     url_env: ROUTELY_URL
-    default_url: http://routely:8000
+    default_url: http://localhost:8000
     health_path: /health
     auth: bearer
     key_env: ROUTELY_API_KEY
