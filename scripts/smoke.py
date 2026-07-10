@@ -1,11 +1,12 @@
 """End-to-end smoke test for the Aitotech Nexus stack.
 
 1. /health must be ok (gateway self).
-2. /health/all is reported (Routely may be DOWN if not running externally).
+2. /health/all is reported (Routely / agents may be DOWN if not running externally).
 3. If Routely is up, a chat envelope round-trips Nexus -> Routely.
 
 Usage: python scripts/smoke.py [--base http://localhost:8080] [--key dev-key]
-Exit code 0 = gateway + local services healthy (Routely optional unless --require-routely).
+Exit code 0 = gateway + local services healthy
+(Routely/agents optional unless --require-routely / --require-agents).
 """
 
 from __future__ import annotations
@@ -42,10 +43,15 @@ def main() -> int:
         action="store_true",
         help="Fail if Routely is down or chat round-trip fails",
     )
+    parser.add_argument(
+        "--require-agents",
+        action="store_true",
+        help="Fail if Aitotech-agents (outreach) is down",
+    )
     args = parser.parse_args()
 
     failures = 0
-    local_services = {"sayra", "n8n", "agents"}
+    local_services = {"sayra", "n8n"}
 
     print("[1/3] GET /health ...")
     try:
@@ -66,11 +72,15 @@ def main() -> int:
         for svc in health["services"]:
             mark = "OK " if svc["up"] else "DOWN"
             print(f"   [{mark}] {svc['service']} ({svc.get('latency_ms', '?')} ms)")
-            if svc["service"] == "routely":
+            name = svc["service"]
+            if name == "routely":
                 routely_up = bool(svc["up"])
                 if args.require_routely and not svc["up"]:
                     failures += 1
-            elif svc["service"] in local_services and not svc["up"]:
+            elif name == "agents":
+                if args.require_agents and not svc["up"]:
+                    failures += 1
+            elif name in local_services and not svc["up"]:
                 failures += 1
     except (urllib.error.URLError, OSError) as exc:
         print(f"   FAILED: {exc}")

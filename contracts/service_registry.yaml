@@ -26,9 +26,10 @@ services:
     health_path: /healthz
     auth: none
 
+  # External only — Aitotech-agents (outreach) lives in its own repo.
   agents:
     url_env: AGENTS_URL
-    default_url: http://agents:8090
+    default_url: http://localhost:8090
     health_path: /health
     auth: bearer
     key_env: AGENTS_API_KEY

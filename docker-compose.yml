@@ -1,10 +1,11 @@
 # Aitotech local stack — one command: .\scripts\dev-up.ps1
 #
 # Host ports:
-#   nexus -> 8080   sayra -> 7860   n8n -> 5678   agents -> 8090
+#   nexus -> 8080   sayra -> 7860   n8n -> 5678
 #
-# Routely (Saas) is NOT in this compose — it is a separate serious project.
-# Point ROUTELY_URL at your external Routely deploy (or local Saas outside this repo).
+# External (NOT in this compose — separate projects):
+#   Routely (Saas)     -> set ROUTELY_URL
+#   Aitotech-agents    -> set AGENTS_URL  (outreach / business agents)
 
 services:
   nexus:
@@ -17,13 +18,12 @@ services:
       ROUTELY_URL: ${ROUTELY_URL:-http://host.docker.internal:8000}
       N8N_URL: http://n8n:5678
       N8N_WEBHOOK_BASE: http://n8n:5678/webhook
-      AGENTS_URL: http://agents:8090
+      AGENTS_URL: ${AGENTS_URL:-http://host.docker.internal:8090}
       ROUTELY_API_KEY: ${ROUTELY_API_KEY:-}
       AGENTS_API_KEY: ${AGENTS_API_KEY:-}
     depends_on:
       - sayra
       - n8n
-      - agents
     extra_hosts:
       - "host.docker.internal:host-gateway"
 
@@ -44,16 +44,6 @@ services:
       N8N_SECURE_COOKIE: "false"
     volumes:
       - n8n_data:/home/node/.n8n
-
-  agents:
-    build: repos/Aitotech-agents
-    ports:
-      - "8090:8090"
-    environment:
-      PORT: "8090"
-    env_file:
-      - path: repos/Aitotech-agents/.env
-        required: false
 
 volumes:
   n8n_data:

@@ -1,7 +1,7 @@
-"""Aitotech-agents adapter — submits business-agent tasks.
+"""Aitotech-agents adapter — submits tasks to the external outreach project.
 
-The agents service persists jobs in Supabase and returns a job id that callers
-can poll or receive callbacks for.
+Aitotech-agents is a separate repo (not vendored in Nexus). Nexus only calls
+its HTTP API via AGENTS_URL; jobs live in that project's Supabase.
 """
 
 from __future__ import annotations

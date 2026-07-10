@@ -5,15 +5,16 @@ logic — only routing, contracts, health checks, auth, and the infrastructure t
 the local stack up with one command.
 
 ```
-Sayra (voice/chat)  ──►  Nexus Gateway  ──►  Routely (external brain — separate repo)
+Sayra (voice/chat)  ──►  Nexus Gateway  ──►  Routely (external — separate repo)
                               │
                               ├──►  ai-engine (n8n workflows)
-                              ├──►  Aitotech-agents (Supabase)
+                              ├──►  Aitotech-agents (external outreach — separate repo)
                               └──►  Aitotech website (status feed)
 ```
 
-**Routely / Saas is not vendored here.** It is a separate project. Nexus talks to it
-only via `ROUTELY_URL` (and optional `ROUTELY_API_KEY`).
+**Not vendored here (separate projects):**
+- **Routely / Saas** — talk via `ROUTELY_URL`
+- **Aitotech-agents** (outreach / business agents) — talk via `AGENTS_URL`
 
 ## What lives here
 
@@ -22,7 +23,7 @@ only via `ROUTELY_URL` (and optional `ROUTELY_API_KEY`).
 | `contracts/` | Task envelope schema + service registry (single source of truth) |
 | `gateway/` | FastAPI app: `/v1/route`, `/health/all`, `/v1/status`, auth |
 | `adapters/` | Connectors for Routely, n8n, Aitotech-agents, Sayra |
-| `repos/` | Git submodules: Sayra, ai-engine, Aitotech-agents (local full-stack) |
+| `repos/` | Git submodules: Sayra, ai-engine (local full-stack) |
 | `scripts/` | `dev-up.ps1` (one-command stack) + `smoke.py` (round-trip test) |
 
 ## Quick start (gateway only)
@@ -31,7 +32,7 @@ only via `ROUTELY_URL` (and optional `ROUTELY_API_KEY`).
 python -m venv .venv
 .venv\Scripts\Activate.ps1
 pip install -r requirements.txt
-copy .env.example .env   # set ROUTELY_URL to your Routely deploy
+copy .env.example .env   # set ROUTELY_URL / AGENTS_URL to your deploys
 uvicorn gateway.main:app --reload
 ```
 
@@ -39,8 +40,8 @@ Check: `http://localhost:8000/health`
 
 ## Quick start (local stack)
 
-Brings up Nexus + Sayra + n8n + agents. Routely must already be running elsewhere
-(or set `ROUTELY_URL` to its deploy URL).
+Brings up Nexus + Sayra + n8n. Routely and Aitotech-agents must run elsewhere
+(or set their URLs in `.env`).
 
 ```powershell
 .\scripts\dev-up.ps1
